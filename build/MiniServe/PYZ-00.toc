@@ -1,4 +1,4 @@
-('E:\\项目演示工具包\\gui_app\\build\\MiniServe\\PYZ-00.pyz',
+('E:\\miniServerApp\\build\\MiniServe\\PYZ-00.pyz',
  [('__future__',
    'C:\\Users\\Admin\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\__future__.py',
    'PYMODULE'),

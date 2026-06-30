@@ -4,6 +4,7 @@ import platform
 import subprocess
 import threading
 import webbrowser
+import time
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 
@@ -170,7 +171,17 @@ class App(ctk.CTk):
 
         try:
             # miniserve --index index.html --spa --port 8080 ./dist
-            cmd = [exe_path, "--index", "index.html", "--spa", "--port", "8080", target_dir]
+            cmd = [
+                exe_path, 
+                "--index", "index.html", 
+                "--spa", 
+                "--port", "8080",
+                # 添加禁用缓存的 Header，防止切换目录后浏览器依然加载旧缓存
+                "--header", "Cache-Control: no-cache, no-store, must-revalidate",
+                "--header", "Pragma: no-cache",
+                "--header", "Expires: 0",
+                target_dir
+            ]
             
             # 隐藏 Windows 控制台窗口
             creationflags = 0
@@ -208,7 +219,9 @@ class App(ctk.CTk):
 
     def open_browser(self):
         if self.server_process:
-            webbrowser.open("http://127.0.0.1:8080")
+            # 添加时间戳参数强制浏览器打开新标签页并跳过缓存
+            url = f"http://127.0.0.1:8080/?t={int(time.time())}"
+            webbrowser.open(url)
 
     def on_closing(self):
         self.stop_server()
