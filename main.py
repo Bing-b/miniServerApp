@@ -11,12 +11,15 @@ from tkinter import filedialog, messagebox
 ctk.set_appearance_mode("System")  # "System", "Dark", "Light"
 ctk.set_default_color_theme("blue")  # "blue", "green", "dark-blue"
 
+# 全局字体配置
+APP_FONT = "Microsoft YaHei" if platform.system() == "Windows" else "PingFang SC"
+
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("MiniServe")
-        self.geometry("500x350")
+        self.geometry("600x420")
         self.resizable(False, False)
 
         self.server_process = None
@@ -33,75 +36,90 @@ class App(ctk.CTk):
         self.build_ui()
 
     def build_ui(self):
-        # 标题
-        self.title_label = ctk.CTkLabel(self, text="MiniServe 极简启动器", font=ctk.CTkFont(size=24, weight="bold"))
-        self.title_label.pack(pady=(20, 10))
+        # --- Header Section ---
+        self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.header_frame.pack(pady=(25, 15), padx=20, fill="x")
 
-        # 目录选择区域
-        self.dir_frame = ctk.CTkFrame(self)
-        self.dir_frame.pack(pady=10, padx=20, fill="x")
+        self.title_label = ctk.CTkLabel(self.header_frame, text="MiniServe 🚀", font=ctk.CTkFont(family=APP_FONT, size=28, weight="bold"))
+        self.title_label.pack()
 
-        self.dir_label = ctk.CTkLabel(self.dir_frame, text="目标文件夹:")
-        self.dir_label.pack(side="left", padx=(10, 5), pady=10)
+        self.subtitle_label = ctk.CTkLabel(self.header_frame, text="快速、轻量的本地静态服务启动器", text_color="gray", font=ctk.CTkFont(family=APP_FONT, size=13))
+        self.subtitle_label.pack(pady=(5, 0))
+
+        # --- Configuration Card ---
+        self.config_card = ctk.CTkFrame(self, corner_radius=15)
+        self.config_card.pack(pady=(0, 20), padx=30, fill="x")
+        
+        self.config_title = ctk.CTkLabel(self.config_card, text="1. 选择静态文件目录", font=ctk.CTkFont(family=APP_FONT, size=14, weight="bold"))
+        self.config_title.pack(anchor="w", padx=20, pady=(15, 5))
+
+        self.dir_frame = ctk.CTkFrame(self.config_card, fg_color="transparent")
+        self.dir_frame.pack(padx=20, pady=(0, 15), fill="x")
 
         self.dir_entry = ctk.CTkEntry(
             self.dir_frame, 
-            width=220,
-            placeholder_text="请选择 dist 文件夹..."
+            height=36,
+            placeholder_text="请选择包含 index.html 的目录..."
         )
-        self.dir_entry.pack(side="left", padx=5)
+        self.dir_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
         self.browse_btn = ctk.CTkButton(
             self.dir_frame, 
             text="浏览...", 
             width=80, 
-            height=32,
-            corner_radius=16,
-            font=ctk.CTkFont(size=13),
+            height=36,
+            corner_radius=8,
+            font=ctk.CTkFont(family=APP_FONT, size=13),
             command=self.browse_directory
         )
-        self.browse_btn.pack(side="left", padx=(5, 10))
+        self.browse_btn.pack(side="right")
 
-        # 状态区域
-        self.status_label = ctk.CTkLabel(self, text="状态: 未运行", text_color="gray", font=ctk.CTkFont(size=14))
-        self.status_label.pack(pady=(10, 5))
+        # --- Operation & Status Card ---
+        self.op_card = ctk.CTkFrame(self, corner_radius=15)
+        self.op_card.pack(pady=0, padx=30, fill="x")
 
-        self.link_label = ctk.CTkLabel(self, text="", text_color="#1f538d", cursor="hand2", font=ctk.CTkFont(size=14, underline=True))
-        self.link_label.pack(pady=5)
-        self.link_label.bind("<Button-1>", lambda e: self.open_browser())
+        self.op_title = ctk.CTkLabel(self.op_card, text="2. 服务控制", font=ctk.CTkFont(family=APP_FONT, size=14, weight="bold"))
+        self.op_title.pack(anchor="w", padx=20, pady=(15, 5))
 
-        # 按钮区域
-        self.btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.btn_frame.pack(pady=20)
+        self.btn_frame = ctk.CTkFrame(self.op_card, fg_color="transparent")
+        self.btn_frame.pack(padx=20, pady=5, fill="x")
 
-        button_font = ctk.CTkFont(size=16, weight="bold")
+        button_font = ctk.CTkFont(family=APP_FONT, size=15, weight="bold")
         
         self.start_btn = ctk.CTkButton(
             self.btn_frame, 
-            text="🚀 启动服务", 
+            text="▶ 启动服务", 
             command=self.start_server, 
-            width=140,
             height=40,
-            corner_radius=20,
+            corner_radius=8,
             font=button_font,
             fg_color="#2FA572", 
             hover_color="#108253"
         )
-        self.start_btn.pack(side="left", padx=15)
+        self.start_btn.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
         self.stop_btn = ctk.CTkButton(
             self.btn_frame, 
             text="⏹ 停止服务", 
             command=self.stop_server, 
-            width=140,
             height=40,
-            corner_radius=20,
+            corner_radius=8,
             font=button_font,
             fg_color="#D32F2F", 
             hover_color="#B71C1C", 
             state="disabled"
         )
-        self.stop_btn.pack(side="left", padx=15)
+        self.stop_btn.pack(side="right", fill="x", expand=True)
+
+        self.status_frame = ctk.CTkFrame(self.op_card, fg_color="transparent")
+        self.status_frame.pack(padx=20, pady=(10, 15), fill="x")
+
+        self.status_label = ctk.CTkLabel(self.status_frame, text="状态: 未运行", text_color="gray", font=ctk.CTkFont(family=APP_FONT, size=13))
+        self.status_label.pack(side="left")
+
+        self.link_label = ctk.CTkLabel(self.status_frame, text="", text_color="#1f538d", cursor="hand2", font=ctk.CTkFont(family=APP_FONT, size=13, underline=True))
+        self.link_label.pack(side="right")
+        self.link_label.bind("<Button-1>", lambda e: self.open_browser())
 
     def browse_directory(self):
         folder = filedialog.askdirectory(initialdir=os.getcwd(), title="选择项目演示文件夹")
@@ -197,6 +215,11 @@ class App(ctk.CTk):
         self.destroy()
 
 if __name__ == "__main__":
-    app = App()
-    app.protocol("WM_DELETE_WINDOW", app.on_closing)
-    app.mainloop()
+    try:
+        app = App()
+        app.protocol("WM_DELETE_WINDOW", app.on_closing)
+        app.mainloop()
+    except Exception as e:
+        import traceback
+        with open("crash.log", "w") as f:
+            f.write(traceback.format_exc())
